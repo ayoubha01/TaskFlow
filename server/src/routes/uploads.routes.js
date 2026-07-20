@@ -4,6 +4,7 @@ import { requireAuth } from "../middleware/auth.middleware.js";
 import { storeAttachment, getAttachmentUrl } from "../services/storage.service.js";
 import { prisma } from "../config/db.js";
 import { assertIsMember } from "../services/projects.service.js";
+import { getIO } from "../sockets/index.js";
 
 const router = Router();
 const upload = multer({
@@ -27,6 +28,14 @@ router.post("/:taskId", upload.single("file"), async (req, res, next) => {
       taskId: task.id,
       fileName: req.file.originalname,
       buffer: req.file.buffer,
+    });
+
+    const attachmentCount = await prisma.attachment.count({ where: { taskId: task.id } });
+
+    getIO().to(`project:${task.projectId}`).emit("task:attached", {
+      taskId: task.id,
+      attachment,
+      attachmentCount,
     });
 
     res.status(201).json(attachment);

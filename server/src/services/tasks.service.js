@@ -126,4 +126,8 @@ export async function addComment({ taskId, body, authorId }) {
     data: { taskId, body, authorId },
     include: { author: { select: { id: true, name: true, email: true } } },
   });
+
+  const commentCount = await prisma.comment.count({ where: { taskId } });
+
+  return { comment, projectId: task.projectId, commentCount };
 }

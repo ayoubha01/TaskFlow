@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
  * Connects to the socket server for a given project and wires up event handlers.
  * handlers: { "task:created": fn, "task:statusChanged": fn, "task:updated": fn, "task:deleted": fn }
  */
+
 export function useSocket(projectId, handlers) {
   const socketRef = useRef(null);
   const handlersRef = useRef(handlers);
@@ -28,7 +29,14 @@ export function useSocket(projectId, handlers) {
       });
     });
 
-    const events = ["task:created", "task:statusChanged", "task:updated", "task:deleted"];
+    const events = [
+      "task:created",
+      "task:statusChanged",
+      "task:updated",
+      "task:deleted",
+      "task:commented",
+      "task:attached",
+    ];
     events.forEach((event) => {
       socket.on(event, (payload) => handlersRef.current?.[event]?.(payload));
     });

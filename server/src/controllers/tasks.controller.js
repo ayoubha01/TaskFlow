@@ -92,10 +92,16 @@ export async function remove(req, res, next) {
 export async function comment(req, res, next) {
   try {
     const { body } = commentSchema.parse(req.body);
-    const newComment = await addComment({
+    const { comment: newComment, projectId, commentCount } = await addComment({
       taskId: req.params.taskId,
       body,
       authorId: req.user.id,
+    });
+
+    getIO().to(`project:${projectId}`).emit("task:commented", {
+      taskId: req.params.taskId,
+      comment: newComment,
+      commentCount,
     });
 
     res.status(201).json(newComment);

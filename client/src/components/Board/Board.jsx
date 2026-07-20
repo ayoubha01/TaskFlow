@@ -30,11 +30,21 @@ export default function Board({ project, onProjectRefresh }) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const setTaskCount = useCallback((taskId, field, count) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, _count: { ...t._count, [field]: count } } : t
+      )
+    );
+  }, []);
+
   useSocket(project.id, {
     "task:created": upsertTask,
     "task:statusChanged": upsertTask,
     "task:updated": upsertTask,
     "task:deleted": ({ id }) => removeTask(id),
+    "task:commented": ({ taskId, commentCount }) => setTaskCount(taskId, "comments", commentCount),
+    "task:attached": ({ taskId, attachmentCount }) => setTaskCount(taskId, "attachments", attachmentCount),
   });
 
   async function handleCreateTask(e) {
@@ -57,7 +67,6 @@ export default function Board({ project, onProjectRefresh }) {
     const columnTasks = tasks.filter((t) => t.status === status);
     const position = columnTasks.length;
 
-    // Optimistic update
     upsertTask({ ...task, status, position });
     await tasksApi.updateTaskStatus(taskId, { status, position });
   }

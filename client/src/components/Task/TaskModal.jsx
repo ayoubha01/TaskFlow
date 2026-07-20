@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import * as tasksApi from "../../api/tasks.js";
+import { useSocket } from "../../hooks/useSocket.js";
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -30,16 +31,18 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
     };
   }, [task.id]);
 
-  function syncCounts(nextComments, nextAttachments) {
-    onUpdated({
-      ...task,
-      description,
-      _count: {
-        comments: nextComments.length,
-        attachments: nextAttachments.length,
-      },
-    });
-  }
+  useSocket(task.projectId, {
+    "task:commented": ({ taskId, comment: incoming }) => {
+      if (taskId !== task.id) return;
+      setComments((prev) => (prev.some((c) => c.id === incoming.id) ? prev : [...prev, incoming]));
+    },
+    "task:attached": ({ taskId, attachment: incoming }) => {
+      if (taskId !== task.id) return;
+      setAttachments((prev) =>
+        prev.some((a) => a.id === incoming.id) ? prev : [...prev, incoming]
+      );
+    },
+  });
 
   async function handleSaveDescription() {
     setSaving(true);
@@ -55,10 +58,8 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
     e.preventDefault();
     if (!commentBody.trim()) return;
     const newComment = await tasksApi.addComment(task.id, commentBody);
-    const next = [...comments, newComment];
-    setComments(next);
+    setComments((prev) => (prev.some((c) => c.id === newComment.id) ? prev : [...prev, newComment]));
     setCommentBody("");
-    syncCounts(next, attachments);
   }
 
   async function handleDelete() {
@@ -74,9 +75,9 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
     setUploading(true);
     try {
       const attachment = await tasksApi.uploadAttachment(task.id, file);
-      const next = [...attachments, attachment];
-      setAttachments(next);
-      syncCounts(comments, next);
+      setAttachments((prev) =>
+        prev.some((a) => a.id === attachment.id) ? prev : [...prev, attachment]
+      );
       e.target.value = "";
     } finally {
       setUploading(false);
