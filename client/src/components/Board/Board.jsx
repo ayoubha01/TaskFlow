@@ -74,18 +74,26 @@ export default function Board({ project, onProjectRefresh }) {
       </form>
 
       <div className="board__columns">
-        {COLUMNS.map((col) => (
-          <div
-            key={col.key}
-            className="board__column"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, col.key)}
-          >
-            <h3>{col.label}</h3>
-            {tasks
-              .filter((t) => t.status === col.key)
-              .sort((a, b) => a.position - b.position)
-              .map((task) => (
+        {COLUMNS.map((col) => {
+          const columnTasks = tasks
+            .filter((t) => t.status === col.key)
+            .sort((a, b) => a.position - b.position);
+
+          return (
+            <div
+              key={col.key}
+              className="board__column"
+              data-status={col.key}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleDrop(e, col.key)}
+            >
+              <div className="board__column-header">
+                <h3>{col.label}</h3>
+                <span className="board__column-count">
+                  {String(columnTasks.length).padStart(2, "0")}
+                </span>
+              </div>
+              {columnTasks.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}
@@ -93,8 +101,9 @@ export default function Board({ project, onProjectRefresh }) {
                   onClick={setSelectedTask}
                 />
               ))}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       {selectedTask && (

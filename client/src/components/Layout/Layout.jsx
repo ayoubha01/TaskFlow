@@ -13,7 +13,10 @@ export default function Layout({ children }) {
   return (
     <div className="layout">
       <header className="navbar">
-        <Link to="/" className="navbar__brand">TaskFlow</Link>
+        <Link to="/" className="navbar__brand">
+          <span className="navbar__mark" />
+          TaskFlow
+        </Link>
         {user && (
           <div className="navbar__user">
             <span>{user.name}</span>
