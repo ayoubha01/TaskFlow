@@ -1,13 +1,19 @@
+
 import { z } from "zod";
 import {
   createProject,
   listProjectsForUser,
   getProjectForUser,
   addMember,
+  addMemberByEmail,
 } from "../services/projects.service.js";
 
 const createProjectSchema = z.object({
   name: z.string().min(1).max(200),
+});
+
+const inviteByEmailSchema = z.object({
+  email: z.string().email(),
 });
 
 const addMemberSchema = z.object({
@@ -48,6 +54,20 @@ export async function addProjectMember(req, res, next) {
     const membership = await addMember({
       projectId: req.params.projectId,
       userId,
+      requesterId: req.user.id,
+    });
+    res.status(201).json(membership);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function inviteMember(req, res, next) {
+  try {
+    const { email } = inviteByEmailSchema.parse(req.body);
+    const membership = await addMemberByEmail({
+      projectId: req.params.projectId,
+      email,
       requesterId: req.user.id,
     });
     res.status(201).json(membership);

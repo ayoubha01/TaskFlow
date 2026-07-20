@@ -19,3 +19,8 @@ export async function addProjectMember(projectId, userId) {
   const { data } = await apiClient.post(`/projects/${projectId}/members`, { userId });
   return data;
 }
+
+export async function inviteMemberByEmail(projectId, email) {
+  const { data } = await apiClient.post(`/projects/${projectId}/invite`, { email });
+  return data;
+}

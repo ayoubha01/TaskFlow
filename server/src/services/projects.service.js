@@ -76,3 +76,28 @@ export async function assertIsOwner(projectId, userId) {
   }
   return membership;
 }
+
+export async function addMemberByEmail({ projectId, email, requesterId }) {
+  await assertIsOwner(projectId, requesterId);
+
+  const invitee = await prisma.user.findUnique({ where: { email } });
+  if (!invitee) {
+    const err = new Error(`No user found with email ${email}`);
+    err.status = 404;
+    throw err;
+  }
+
+  const existing = await prisma.projectMember.findUnique({
+    where: { userId_projectId: { userId: invitee.id, projectId } },
+  });
+  if (existing) {
+    const err = new Error(`${email} is already a member of this project`);
+    err.status = 409;
+    throw err;
+  }
+
+  return prisma.projectMember.create({
+    data: { projectId, userId: invitee.id, role: "member" },
+    include: { user: { select: { id: true, name: true, email: true } } },
+  });
+}

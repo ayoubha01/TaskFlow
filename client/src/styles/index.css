@@ -244,3 +244,77 @@ textarea {
 .dashboard h1 {
   margin-bottom: 4px;
 }
+
+.invite-member {
+  background: white;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.invite-member h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.invite-member__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.invite-member__list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f5f6f8;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 13px;
+}
+
+.invite-member__role {
+  font-size: 11px;
+  color: #3b5bdb;
+  text-transform: uppercase;
+}
+
+.invite-member__form {
+  display: flex;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.invite-member__success {
+  color: #2f9e44;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.project-board-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.project-board-page__header a {
+  color: #3b5bdb;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #888;
+  font-size: 14px;
+}
