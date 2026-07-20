@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   create,
+  getOne,
   updateStatus,
   update,
   remove,
@@ -13,9 +14,11 @@ const router = Router();
 router.use(requireAuth);
 
 router.post("/", create);
+router.get("/:taskId", getOne);
 router.patch("/:taskId/status", updateStatus);
 router.patch("/:taskId", update);
 router.delete("/:taskId", remove);
 router.post("/:taskId/comments", comment);
+
 
 export default router;

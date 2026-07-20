@@ -32,3 +32,13 @@ export async function uploadAttachment(taskId, file) {
   });
   return data;
 }
+
+export async function fetchTask(taskId) {
+  const { data } = await apiClient.get(`/tasks/${taskId}`);
+  return data;
+}
+
+export async function fetchAttachmentUrl(attachmentId) {
+  const { data } = await apiClient.get(`/uploads/${attachmentId}/url`);
+  return data.url;
+}

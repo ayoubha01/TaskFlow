@@ -26,6 +26,32 @@ export async function createTask({ projectId, title, description, createdById })
   });
 }
 
+export async function getTaskById({ taskId, userId }) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: {
+      assignedTo: { select: { id: true, name: true, email: true } },
+      comments: {
+        orderBy: { createdAt: "asc" },
+        include: { author: { select: { id: true, name: true, email: true } } },
+      },
+      attachments: {
+        orderBy: { createdAt: "asc" },
+      },
+    },
+  });
+
+  if (!task) {
+    const err = new Error("Task not found");
+    err.status = 404;
+    throw err;
+  }
+
+  await assertIsMember(task.projectId, userId);
+  return task;
+}
+
+
 export async function updateTaskStatus({ taskId, status, position, userId }) {
   if (!VALID_STATUSES.includes(status)) {
     const err = new Error(`Invalid status: ${status}`);

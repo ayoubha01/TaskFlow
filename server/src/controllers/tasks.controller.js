@@ -5,6 +5,7 @@ import {
   updateTask,
   deleteTask,
   addComment,
+  getTaskById,
 } from "../services/tasks.service.js";
 import { getIO } from "../sockets/index.js";
 
@@ -98,6 +99,15 @@ export async function comment(req, res, next) {
     });
 
     res.status(201).json(newComment);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getOne(req, res, next) {
+  try {
+    const task = await getTaskById({ taskId: req.params.taskId, userId: req.user.id });
+    res.json(task);
   } catch (err) {
     next(err);
   }
