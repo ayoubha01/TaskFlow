@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { registerUser, loginUser } from "../services/auth.service.js";
+import { registerUser, loginUser, updateUser } from "../services/auth.service.js";
 import { prisma } from "../config/db.js";
 
 const registerSchema = z.object({
@@ -11,6 +11,10 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+});
+
+const updateProfileSchema = z.object({
+  name: z.string().min(1).max(100),
 });
 
 export async function register(req, res, next) {
@@ -42,6 +46,16 @@ export async function me(req, res, next) {
     res.json(user);
   } catch (err) {
     next(err);
+  }
+}
+
+export async function updateMe(req, res, next) {
+  try {
+    const { name } = updateProfileSchema.parse(req.body);
+    const user = await updateUser({ userId: req.user.id, name });
+    res.json(user);
+  } catch (err) {
+    next(toHttpError(err));
   }
 }
 

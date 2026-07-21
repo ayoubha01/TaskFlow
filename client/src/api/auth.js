@@ -14,3 +14,8 @@ export async function fetchMe() {
   const { data } = await apiClient.get("/auth/me");
   return data;
 }
+
+export async function updateMe(name) {
+  const { data } = await apiClient.patch("/auth/me", { name });
+  return data;
+}

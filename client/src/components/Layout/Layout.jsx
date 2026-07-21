@@ -1,14 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import UserMenu from "./UserMenu.jsx";
 
 export default function Layout({ children }) {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
+  const { user } = useAuth();
 
   return (
     <div className="layout">
@@ -17,12 +12,7 @@ export default function Layout({ children }) {
           <span className="navbar__mark" />
           TaskFlow
         </Link>
-        {user && (
-          <div className="navbar__user">
-            <span>{user.name}</span>
-            <button onClick={handleLogout}>Log out</button>
-          </div>
-        )}
+        {user && <UserMenu />}
       </header>
       <main className="layout__content">{children}</main>
     </div>

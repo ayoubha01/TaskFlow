@@ -46,8 +46,16 @@ function buildAuthResponse(user) {
 
   return {
     token,
-    user: { id: user.id, email: user.email, name: user.name },
+    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
   };
+}
+
+export async function updateUser({ userId, name }) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { name },
+    select: { id: true, email: true, name: true, createdAt: true },
+  });
 }
 
 export function verifyToken(token) {

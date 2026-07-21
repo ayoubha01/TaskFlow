@@ -141,12 +141,78 @@ textarea::placeholder {
   box-shadow: 0 0 8px 1px rgba(242, 169, 59, 0.7);
 }
 
-.navbar__user {
-  display: flex;
-  gap: 14px;
-  align-items: center;
+.user-menu {
+  position: relative;
+}
+
+.user-menu__trigger {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
   font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+}
+
+.user-menu__trigger:hover {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.user-menu__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.user-menu__section label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
   color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.user-menu__static {
+  margin: 0;
+  font-size: 14px;
+}
+
+.user-menu__name-form {
+  display: flex;
+  gap: 8px;
+}
+
+.user-menu__success {
+  color: var(--success);
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+
+.user-menu__logout {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  align-self: stretch;
+}
+
+.user-menu__logout:hover {
+  background: rgba(255, 107, 107, 0.1);
+  box-shadow: none;
 }
 
 .layout__content {
