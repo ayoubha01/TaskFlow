@@ -5,6 +5,7 @@ import {
   getOne,
   addProjectMember,
   inviteMember,
+  remove,
 } from "../controllers/projects.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
@@ -17,4 +18,5 @@ router.get("/", list);
 router.get("/:projectId", getOne);
 router.post("/:projectId/members", addProjectMember);
 router.post("/:projectId/invite", inviteMember);
+router.delete("/:projectId", remove);
 export default router;

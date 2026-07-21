@@ -6,6 +6,7 @@ import {
   getProjectForUser,
   addMember,
   addMemberByEmail,
+  deleteProject,
 } from "../services/projects.service.js";
 
 const createProjectSchema = z.object({
@@ -71,6 +72,21 @@ export async function inviteMember(req, res, next) {
       requesterId: req.user.id,
     });
     res.status(201).json(membership);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function remove(req, res, next) {
+  try {
+    const { id } = await deleteProject({
+      projectId: req.params.projectId,
+      requesterId: req.user.id,
+    });
+
+    getIO().to(`project:${id}`).emit("project:deleted", { id });
+
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

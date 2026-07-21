@@ -67,6 +67,12 @@ export async function assertIsMember(projectId, userId) {
   return membership;
 }
 
+export async function deleteProject({ projectId, requesterId }) {
+  await assertIsOwner(projectId, requesterId);
+  await prisma.project.delete({ where: { id: projectId } });
+  return { id: projectId };
+}
+
 export async function assertIsOwner(projectId, userId) {
   const membership = await assertIsMember(projectId, userId);
   if (membership.role !== "owner") {
