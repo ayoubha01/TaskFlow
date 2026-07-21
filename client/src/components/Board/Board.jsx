@@ -10,15 +10,19 @@ const COLUMNS = [
   { key: "done", label: "Done" },
 ];
 
-export default function Board({ project, onProjectRefresh }) {
+export default function Board({ project, onProjectRefresh, onProjectDeleted }) {
   return (
     <SocketProvider projectId={project.id}>
-      <BoardContent project={project} onProjectRefresh={onProjectRefresh} />
+      <BoardContent
+        project={project}
+        onProjectRefresh={onProjectRefresh}
+        onProjectDeleted={onProjectDeleted}
+      />
     </SocketProvider>
   );
 }
 
-function BoardContent({ project }) {
+function BoardContent({ project, onProjectDeleted }) {
   const [tasks, setTasks] = useState(project.tasks || []);
   const [selectedTask, setSelectedTask] = useState(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -53,6 +57,7 @@ function BoardContent({ project }) {
     "task:deleted": ({ id }) => removeTask(id),
     "task:commented": ({ taskId, commentCount }) => setTaskCount(taskId, "comments", commentCount),
     "task:attached": ({ taskId, attachmentCount }) => setTaskCount(taskId, "attachments", attachmentCount),
+    "project:deleted": () => onProjectDeleted?.(),
   });
 
   async function handleCreateTask(e) {
@@ -75,6 +80,7 @@ function BoardContent({ project }) {
     const columnTasks = tasks.filter((t) => t.status === status);
     const position = columnTasks.length;
 
+    // Optimistic update
     upsertTask({ ...task, status, position });
     await tasksApi.updateTaskStatus(taskId, { status, position });
   }

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as projectsApi from "../api/projects.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import Layout from "../components/Layout/Layout.jsx";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [newProjectName, setNewProjectName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -21,6 +23,16 @@ export default function Dashboard() {
     const project = await projectsApi.createProject({ name: newProjectName });
     setProjects((prev) => [project, ...prev]);
     setNewProjectName("");
+  }
+
+  async function handleDelete(project) {
+    if (!confirm(`Delete "${project.name}"? This removes all its tasks permanently.`)) return;
+    await projectsApi.deleteProject(project.id);
+    setProjects((prev) => prev.filter((p) => p.id !== project.id));
+  }
+
+  function isOwner(project) {
+    return project.members?.some((m) => m.userId === user.id && m.role === "owner");
   }
 
   return (
@@ -44,13 +56,22 @@ export default function Dashboard() {
         ) : (
           <ul className="project-list">
             {projects.map((project) => (
-              <li key={project.id}>
-                <Link to={`/projects/${project.id}`}>
+              <li key={project.id} className="project-list__row">
+                <Link to={`/projects/${project.id}`} className="project-list__link">
                   {project.name}
                   <span className="project-list__count">
                     {project._count?.tasks ?? 0} tasks
                   </span>
                 </Link>
+                {isOwner(project) && (
+                  <button
+                    type="button"
+                    className="project-list__delete"
+                    onClick={() => handleDelete(project)}
+                  >
+                    Delete
+                  </button>
+                )}
               </li>
             ))}
           </ul>

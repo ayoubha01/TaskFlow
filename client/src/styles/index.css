@@ -219,7 +219,7 @@ textarea::placeholder {
   gap: 8px;
 }
 
-.project-list li a {
+.project-list__link {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -230,9 +230,10 @@ textarea::placeholder {
   text-decoration: none;
   color: var(--text);
   transition: border-color 150ms ease, transform 100ms ease;
+  flex: 1;
 }
 
-.project-list li a:hover {
+.project-list__link:hover {
   border-color: var(--accent-dim);
   transform: translateX(2px);
 }
@@ -242,6 +243,28 @@ textarea::placeholder {
   color: var(--text-dim);
   font-size: 13px;
   letter-spacing: 0.02em;
+}
+
+.project-list__row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.project-list__delete {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.project-list__delete:hover {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: var(--danger);
+  color: var(--danger);
+  box-shadow: none;
 }
 
 /* ---------- Project board header ---------- */
@@ -266,6 +289,17 @@ textarea::placeholder {
 
 .project-board-page__header h1 {
   font-size: 22px;
+}
+
+.project-board-page__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.project-board-page__title-row button.danger {
+  margin-top: 0;
 }
 
 .loading-screen {

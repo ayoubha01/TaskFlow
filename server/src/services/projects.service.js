@@ -55,34 +55,6 @@ export async function addMember({ projectId, userId, requesterId }) {
   });
 }
 
-export async function assertIsMember(projectId, userId) {
-  const membership = await prisma.projectMember.findUnique({
-    where: { userId_projectId: { userId, projectId } },
-  });
-  if (!membership) {
-    const err = new Error("Not a member of this project");
-    err.status = 403;
-    throw err;
-  }
-  return membership;
-}
-
-export async function deleteProject({ projectId, requesterId }) {
-  await assertIsOwner(projectId, requesterId);
-  await prisma.project.delete({ where: { id: projectId } });
-  return { id: projectId };
-}
-
-export async function assertIsOwner(projectId, userId) {
-  const membership = await assertIsMember(projectId, userId);
-  if (membership.role !== "owner") {
-    const err = new Error("Only the project owner can perform this action");
-    err.status = 403;
-    throw err;
-  }
-  return membership;
-}
-
 export async function addMemberByEmail({ projectId, email, requesterId }) {
   await assertIsOwner(projectId, requesterId);
 
@@ -106,4 +78,32 @@ export async function addMemberByEmail({ projectId, email, requesterId }) {
     data: { projectId, userId: invitee.id, role: "member" },
     include: { user: { select: { id: true, name: true, email: true } } },
   });
+}
+
+export async function deleteProject({ projectId, requesterId }) {
+  await assertIsOwner(projectId, requesterId);
+  await prisma.project.delete({ where: { id: projectId } });
+  return { id: projectId };
+}
+
+export async function assertIsMember(projectId, userId) {
+  const membership = await prisma.projectMember.findUnique({
+    where: { userId_projectId: { userId, projectId } },
+  });
+  if (!membership) {
+    const err = new Error("Not a member of this project");
+    err.status = 403;
+    throw err;
+  }
+  return membership;
+}
+
+export async function assertIsOwner(projectId, userId) {
+  const membership = await assertIsMember(projectId, userId);
+  if (membership.role !== "owner") {
+    const err = new Error("Only the project owner can perform this action");
+    err.status = 403;
+    throw err;
+  }
+  return membership;
 }

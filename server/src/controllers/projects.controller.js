@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import {
   createProject,
@@ -8,17 +7,18 @@ import {
   addMemberByEmail,
   deleteProject,
 } from "../services/projects.service.js";
+import { getIO } from "../sockets/index.js";
 
 const createProjectSchema = z.object({
   name: z.string().min(1).max(200),
 });
 
-const inviteByEmailSchema = z.object({
-  email: z.string().email(),
-});
-
 const addMemberSchema = z.object({
   userId: z.string().uuid(),
+});
+
+const inviteByEmailSchema = z.object({
+  email: z.string().email(),
 });
 
 export async function create(req, res, next) {
@@ -84,6 +84,9 @@ export async function remove(req, res, next) {
       requesterId: req.user.id,
     });
 
+    // Notify anyone currently viewing this project's board so they get
+    // redirected instead of being left on a page for a project that no
+    // longer exists.
     getIO().to(`project:${id}`).emit("project:deleted", { id });
 
     res.status(204).send();

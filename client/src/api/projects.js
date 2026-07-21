@@ -24,3 +24,7 @@ export async function inviteMemberByEmail(projectId, email) {
   const { data } = await apiClient.post(`/projects/${projectId}/invite`, { email });
   return data;
 }
+
+export async function deleteProject(projectId) {
+  await apiClient.delete(`/projects/${projectId}`);
+}
