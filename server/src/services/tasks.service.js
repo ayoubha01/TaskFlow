@@ -3,29 +3,6 @@ import { assertIsMember } from "./projects.service.js";
 
 const VALID_STATUSES = ["todo", "in_progress", "done"];
 
-export async function createTask({ projectId, title, description, createdById }) {
-  await assertIsMember(projectId, createdById);
-
-  const maxPosition = await prisma.task.aggregate({
-    where: { projectId, status: "todo" },
-    _max: { position: true },
-  });
-
-  return prisma.task.create({
-    data: {
-      projectId,
-      title,
-      description,
-      createdById,
-      status: "todo",
-      position: (maxPosition._max.position ?? -1) + 1,
-    },
-    include: {
-      assignedTo: { select: { id: true, name: true, email: true } },
-    },
-  });
-}
-
 export async function getTaskById({ taskId, userId }) {
   const task = await prisma.task.findUnique({
     where: { id: taskId },
@@ -51,6 +28,28 @@ export async function getTaskById({ taskId, userId }) {
   return task;
 }
 
+export async function createTask({ projectId, title, description, createdById }) {
+  await assertIsMember(projectId, createdById);
+
+  const maxPosition = await prisma.task.aggregate({
+    where: { projectId, status: "todo" },
+    _max: { position: true },
+  });
+
+  return prisma.task.create({
+    data: {
+      projectId,
+      title,
+      description,
+      createdById,
+      status: "todo",
+      position: (maxPosition._max.position ?? -1) + 1,
+    },
+    include: {
+      assignedTo: { select: { id: true, name: true, email: true } },
+    },
+  });
+}
 
 export async function updateTaskStatus({ taskId, status, position, userId }) {
   if (!VALID_STATUSES.includes(status)) {
@@ -122,7 +121,7 @@ export async function addComment({ taskId, body, authorId }) {
   }
   await assertIsMember(task.projectId, authorId);
 
-  return prisma.comment.create({
+  const comment = await prisma.comment.create({
     data: { taskId, body, authorId },
     include: { author: { select: { id: true, name: true, email: true } } },
   });

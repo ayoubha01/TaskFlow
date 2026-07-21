@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as tasksApi from "../../api/tasks.js";
-import { useSocket } from "../../hooks/useSocket.js";
+import { useProjectSocket } from "../../context/SocketContext.jsx";
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -16,7 +16,10 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [commentError, setCommentError] = useState(null);
 
+  // Fetch the full task (real comments + attachments) every time the modal opens —
+  // the board only has partial data (counts, not the actual lists).
   useEffect(() => {
     let cancelled = false;
     tasksApi.fetchTask(task.id).then((full) => {
@@ -31,7 +34,10 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
     };
   }, [task.id]);
 
-  useSocket(task.projectId, {
+  // Live updates while the modal is open: if another member comments or
+  // uploads on this same task, reflect it without needing to reopen.
+  // Dedupe by id, since our own actions already append locally.
+  useProjectSocket({
     "task:commented": ({ taskId, comment: incoming }) => {
       if (taskId !== task.id) return;
       setComments((prev) => (prev.some((c) => c.id === incoming.id) ? prev : [...prev, incoming]));
@@ -54,12 +60,18 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
     }
   }
 
-  async function handleAddComment(e) {
-    e.preventDefault();
+  async function handlePostComment() {
     if (!commentBody.trim()) return;
-    const newComment = await tasksApi.addComment(task.id, commentBody);
-    setComments((prev) => (prev.some((c) => c.id === newComment.id) ? prev : [...prev, newComment]));
-    setCommentBody("");
+    setCommentError(null);
+    try {
+      const newComment = await tasksApi.addComment(task.id, commentBody);
+      setComments((prev) =>
+        prev.some((c) => c.id === newComment.id) ? prev : [...prev, newComment]
+      );
+      setCommentBody("");
+    } catch (err) {
+      setCommentError(err.response?.data?.error || "Failed to post comment");
+    }
   }
 
   async function handleDelete() {
@@ -86,6 +98,8 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
 
   async function handleViewAttachment(attachment) {
     const url = await tasksApi.fetchAttachmentUrl(attachment.id);
+    // Local-disk uploads return a relative path (/uploads/...) served by the API,
+    // not the frontend — S3 uploads already return a full signed URL.
     const fullUrl = url.startsWith("/")
       ? `${import.meta.env.VITE_API_URL}${url}`
       : url;
@@ -139,18 +153,27 @@ export default function TaskModal({ task, onClose, onUpdated, onDeleted }) {
               {comments.length === 0 && <p className="hint">No comments yet.</p>}
               {comments.map((c) => (
                 <div key={c.id} className="comment">
-                  <strong>{c.author.name}</strong>
+                  <strong>{c.author?.name || "Unknown"}</strong>
                   <p>{c.body}</p>
                 </div>
               ))}
-              <form onSubmit={handleAddComment}>
+              <div className="comment-composer">
                 <input
                   value={commentBody}
                   onChange={(e) => setCommentBody(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handlePostComment();
+                    }
+                  }}
                   placeholder="Write a comment…"
                 />
-                <button type="submit">Post</button>
-              </form>
+                <button type="button" onClick={handlePostComment}>
+                  Post
+                </button>
+              </div>
+              {commentError && <p className="error">{commentError}</p>}
             </div>
 
             <button className="danger" onClick={handleDelete}>

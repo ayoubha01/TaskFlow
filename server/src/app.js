@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { env } from "./config/env.js";
+import { logger } from "./utils/logger.js";
 import authRoutes from "./routes/auth.routes.js";
 import projectsRoutes from "./routes/projects.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
@@ -13,6 +14,17 @@ export function createApp() {
 
   app.use(cors({ origin: env.clientOrigin, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
+
+  // Log every request — helpful while debugging; safe to keep in dev.
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on("finish", () => {
+      logger.info(`${req.method} ${req.originalUrl} → ${res.statusCode}`, {
+        ms: Date.now() - start,
+      });
+    });
+    next();
+  });
 
   // Serve local file uploads directly when not using S3 (dev convenience)
   if (!env.uploadsBucket) {

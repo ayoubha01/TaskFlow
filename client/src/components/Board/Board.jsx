@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import TaskCard from "../Task/TaskCard.jsx";
 import TaskModal from "../Task/TaskModal.jsx";
-import { useSocket } from "../../hooks/useSocket.js";
+import { SocketProvider, useProjectSocket } from "../../context/SocketContext.jsx";
 import * as tasksApi from "../../api/tasks.js";
 
 const COLUMNS = [
@@ -11,6 +11,14 @@ const COLUMNS = [
 ];
 
 export default function Board({ project, onProjectRefresh }) {
+  return (
+    <SocketProvider projectId={project.id}>
+      <BoardContent project={project} onProjectRefresh={onProjectRefresh} />
+    </SocketProvider>
+  );
+}
+
+function BoardContent({ project }) {
   const [tasks, setTasks] = useState(project.tasks || []);
   const [selectedTask, setSelectedTask] = useState(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -38,7 +46,7 @@ export default function Board({ project, onProjectRefresh }) {
     );
   }, []);
 
-  useSocket(project.id, {
+  useProjectSocket({
     "task:created": upsertTask,
     "task:statusChanged": upsertTask,
     "task:updated": upsertTask,

@@ -30,6 +30,15 @@ const commentSchema = z.object({
   body: z.string().min(1).max(2000),
 });
 
+export async function getOne(req, res, next) {
+  try {
+    const task = await getTaskById({ taskId: req.params.taskId, userId: req.user.id });
+    res.json(task);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function create(req, res, next) {
   try {
     const data = createTaskSchema.parse(req.body);
@@ -105,15 +114,6 @@ export async function comment(req, res, next) {
     });
 
     res.status(201).json(newComment);
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function getOne(req, res, next) {
-  try {
-    const task = await getTaskById({ taskId: req.params.taskId, userId: req.user.id });
-    res.json(task);
   } catch (err) {
     next(err);
   }
